@@ -1,0 +1,21 @@
+type Time = int;
+type Task = 
+ record {
+   category: text;
+   completed: opt bool;
+   dueDate: Time;
+   id: nat;
+   lead: text;
+   name: text;
+   project: text;
+ };
+service : {
+  addTask: (text, text, Time, text, text) -> ();
+  getHealth: () -> (text) query;
+  getTasks: () -> (vec record {
+                         text;
+                         vec Task;
+                       }) query;
+  markTaskComplete: (nat) -> ();
+  removeTask: (nat) -> ();
+}

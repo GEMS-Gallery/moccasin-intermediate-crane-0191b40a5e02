@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorized Task List - v0 Style</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h2 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-icon {
+            margin-right: 0.75rem;
+        }
+        
+        .task-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 0;
+        }
+        
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-name {
+            font-size: 0.875rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .due-date {
+            font-size: 0.75rem;
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+        
+        .overdue {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        @media (max-width: 640px) {
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .due-date {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="task-container"></div>
+
+    <script>
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const tasks = await response.json();
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        }
+
+        function renderTasks(tasks) {
+            const container = document.getElementById('task-container');
+            container.innerHTML = '';
+
+            for (const [category, categoryTasks] of Object.entries(tasks)) {
+                const categoryHtml = `
+                    <h2>
+                        <i data-feather="${getCategoryIcon(category)}" class="category-icon"></i>
+                        ${category}
+                    </h2>
+                    <ul class="task-list">
+                        ${categoryTasks.map(task => `
+                            <li class="task-item">
+                                <span class="task-name">${task.name}</span>
+                                <span class="due-date ${isOverdue(task.dueDate) ? 'overdue' : ''}">${formatDate(task.dueDate)}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                container.innerHTML += categoryHtml;
+            }
+
+            feather.replace();
+        }
+
+        function getCategoryIcon(category) {
+            switch (category) {
+                case 'GEMS': return 'package';
+                case 'Web IDE': return 'code';
+                case 'OISY': return 'globe';
+                default: return 'circle';
+            }
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(Number(timestamp));
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function isOverdue(timestamp) {
+            return new Date(Number(timestamp)) < new Date();
+        }
+
+        fetchTasks();
+    </script>
+</body>
+</html>
